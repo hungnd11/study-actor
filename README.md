@@ -6,29 +6,37 @@
 2. Case study: ThingsBoard's Implementation of Actor Model
 3. Discussions
 
-## The Actor Model
+## Concurrency and the Actor Model: An Overview
 
 ### Concurrent Programming
 
-https://web.mit.edu/6.005/www/fa14/classes/17-concurrency/
+* Concurrency means multiple computations are happening at the same time.
 
-* TODO: Write more clearly!
+* Processor clock speeds are no longer increasing. Instead, we’re getting more cores with each new generation of chips. In order to get a computation to run faster, we’ll have to split up a computation into concurrent pieces and running these pieces in parallel.
 
-* Concurrency is not parallelism.
+* **Concurrency is not parallelism.**
   * Concurrency is about dealing with lots of things at once, parallelism is about doing lots of things at once.
   * Concurrency is about structure, parallelism is about execution.
 
-* The modern computer are parallel on many different levels.
-  * Bit-level Parallelism
-  * Instruction-level Parallelism
-  * Data Parallelism: e.g. modern GPUs
-  * Task-level Parallelism (multiple processors)
-    * Shared-memory multiprocessor: each procssor can access any memory location, interprocessor communicated is primarily through memory.
-    * Distributed-memory system: each processor has its own local memory and where interprocessor communication is primarily via the network.
+* **Implementation**: Two common models for concurrent programming
+  * **Shared memory**: In the shared memory model of concurrency, concurrent modules interact by reading and writing shared objects in memory.
+    * Examples of the shared-memory model:
+      * A and B might be two processors (or processor cores) in the same computer, sharing the same physical memory.
+      * A and B might be two programs running on the same computer, sharing a common filesystem with files they can read and write.
+      * A and B might be two threads in the same Java program, sharing the same Java objects.
 
-* Two common models for concurrent programming
-  * Shared memory
-  * Message passing
+    ![Shared Memory Model](./assets/img/shared-memory.png "Shared Memory Model")
+    *Figure 1: An illustration of shared memory model*
+
+  * **Message passing**: In the message-passing model, concurrent modules interact by sending messages to each other through a communication channel. Modules send off messages, and incoming messages to each module are queued up for handling
+    * Examples of message-passing model:
+      * A and B might be two computers in a network, communicating by network connections.
+      * A and B might be a web browser and a web server – A opens a connection to B, asks for a web page, and B sends the web page data back to A.
+      * A and B might be an instant messaging client and server.
+      * A and B might be two programs running on the same computer whose input and output have been connected by a pipe, like `ls | grep` typed into a command prompt.
+    
+    ![Message Passing Model](./assets/img/message-passing.png "Message Passing Model")
+    *Figure 2: An illustration of message passing model*
 
 ### Actor Model
 
@@ -157,6 +165,7 @@ https://web.mit.edu/6.005/www/fa14/classes/17-concurrency/
   * **Rule Chain Actor** - process incoming messages and dispatches them to rule node actors. An instance of this actor (for the root rule chain) is always present in memory.
   * **Rule Node Actor** - process incoming messages, and report results back to rule chain actor. An instance of this actor (for the input node of root rule chain) is always present in memory.
   * **Stats Actor** - process stats messages. An instance of this actor is always present in memory.
+  
   ![The Actor Hierarchy](./assets/img/tb-actor-system-hierarchies.png "The actor hierarchy")
   *Figure 2: The actor hierarchy in TB Actor System*
 
@@ -182,71 +191,56 @@ https://web.mit.edu/6.005/www/fa14/classes/17-concurrency/
 
 ## Discussions
 
-### What actor model is NOT?
+### Why the actor model?
 
-* [Actor Model vs. Object Oriented Programming](https://stackoverflow.com/questions/41215734/actor-model-vs-object-oriented-model)
+* The benefits of actor model
+  * Learnable by developers and "safer" than lock-based concurrency.
+  * Structure and manage concurrency applications easier.
+  * Separation of concerns: business logic and concurrency logic.
+  * Better concurrency performance: actors are lightweight
 
-* [Actor Model vs. Message Queue]
+### What the actor model is NOT?
 
-### Why actor model?
+* Actor Model vs. Object Oriented Programming
+  * Actors look similar to objects? - Calling a method of an object is like passing a message to invoke computation.
+  * OOP - originally developed without concurrency in mind
+  * Actor Model - originally developed with concurrency in mind
 
-* https://doc.akka.io/docs/akka/current/typed/guide/actors-motivation.html
-* https://doc.akka.io/docs/akka/current/typed/guide/actors-intro.html
+* Actor Model vs. Message Queue
+  * Actors look similar to producers / consumers in MQ? - asynchronous messaging, event-based.
+  * Actors should be implemented in a single programming language. MQ can connect different systems (e.g. some are implemented in Python, some are in Java)
+  * Actors are more lightweight.
 
-### When to use the actor model?
+### When to / not to use the actor model?
 
-* [When should one use the Actor Model?](https://stackoverflow.com/questions/1813794/when-should-one-use-the-actor-model)
+* It should be based on the nature of the problem.
+  * If the problem is to speedup a nested loop / recursion? - parallel loop is likely a better solution.
+  * Complex system with dependencies and coordination of states - actor model is likely a good solution.
 
-* Fit for modelling IoT system?
-  * Main characteristics of a typical IoT system?
-    * A large number of managed devices, each of which consists of changing internal state.
-    * Device managers and hierarchical groups of IoT devices.
-  * Conventional concurrency model? - synchronization on shared mutable state using locks.
-  * Actor model
-    * Actors are lightweight?
-    * Message passing? - loose-coupling by means of non-blocking communications
-    * Each actor can spawn child ators with programmable supervision strategies
+* Example: Using actor model for an IoT system
+  * A large number of managed devices, each of which consists of changing internal state.
+  * Device managers and hierarchical groups of IoT devices.
+  * The system must support millions of these device actors.
+  * The system must run on a cluster of nodes (for distributed workload) and should scale elastically (both horizontally across many nodes and vertically on a single node) if more devies come online.
 
 ## References
 
+* [Wikipedia - Concurrent Computing](https://en.wikipedia.org/wiki/Concurrent_computing)
+* [Reading 17: Concurrency](https://web.mit.edu/6.005/www/fa14/classes/17-concurrency/)
 * [Actor model - Wikipedia](https://en.wikipedia.org/wiki/Actor_model)
+* [Actor model - Wiki C2](http://wiki.c2.com/?ActorsModel)
 * [Deconstructing the actor model](http://www.dalnefre.com/wp/2010/05/deconstructing-the-actor-model/)
 * [Requirements for an Actor Programming Language](http://www.dalnefre.com/wp/2020/01/requirements-for-an-actor-programming-language/)
 * [Actor-based concurrency](https://berb.github.io/diploma-thesis/original/054_actors.html)
+* [Message Passing and the Actor Model](http://dist-prog-book.com/chapter/3/message-passing.html)
 * [Benefits of the Actor Model](https://www.oreilly.com/library/view/scala-reactive-programming/9781787288645/8c433764-3a4c-4ae8-9ee0-dbc831297d64.xhtml)
-2. [Learn you an actor system for great good: Part I](https://evacchi.github.io/posts/2021/10/12/learn-you-an-actor-system-for-great-good-with-java-17-records-switch-expressions-and-jbang/)
-
-http://wiki.c2.com/?ActorsModel
+* Learn you an actor system for great good: [Part 1](https://evacchi.github.io/posts/2021/10/12/learn-you-an-actor-system-for-great-good-with-java-17-records-switch-expressions-and-jbang/) and [Part 2](https://evacchi.github.io/posts/2021/11/16/write-you-a-chat-for-great-good-with-java-17-actors-and-jbang/)
+* [A minimal actor system implementation - Victor Klang](https://gist.github.com/viktorklang/2557678)
 https://en.wikipedia.org/wiki/Actor_model_and_process_calculi_history
-
+* [SO - When should one use the Actor Model?](https://stackoverflow.com/questions/1813794/when-should-one-use-the-actor-model)
 https://stackoverflow.com/questions/4648280/what-design-decisions-would-favour-scalas-actors-instead-of-jms
-
-
-https://evacchi.github.io/posts/2021/11/16/write-you-a-chat-for-great-good-with-java-17-actors-and-jbang/
-https://github.com/evacchi/min-java-actors/blob/main/src/main/java/io/github/evacchi/Actor.java
-https://gist.github.com/viktorklang/2557678
-3. https://www.toptal.com/scala/concurrency-and-fault-tolerance-made-easy-an-intro-to-akka
-4. https://berb.github.io/diploma-thesis/original/052_threads.html
-5. http://akshantalpm.github.io/Actor-Model-For-IoT/
-6. https://sunitc.dev/2019/02/04/introduction-to-the-actor-model/
-7. https://sunitc.dev/2019/02/04/writing-your-first-actor-program/
-8. https://doc.akka.io/docs/akka/current/typed/guide/tutorial_4.html
-9. https://doc.akka.io/docs/akka/current/general/actor-systems.html
-10. https://softwaremill.com/reactive-event-sourcing-in-java-part-2-actor-model/
-http://blog.genuine.com/2017/07/scala-iot-systems-with-akka-actors-ii/
-http://blog.genuine.com/2016/04/internet-of-things-and-akka-actors/
-https://2021.desosa.nl/projects/ThingsBoard/posts/4.-distribution/
-
-https://github.com/ThingsBoard/ThingsBoard/blob/af5e52dd972f038a7dcfb97eabec3f4d1c177d3a/application/src/main/resources/actor-system.conf
-https://stackoverflow.com/questions/5693346/when-to-use-actors-instead-of-messaging-solutions-such-as-websphere-mq-or-tibco
-https://stackoverflow.com/questions/4648280/what-design-decisions-would-favour-scalas-actors-instead-of-jms
-
-seven concurrency models in seven days
-
-
-https://berb.github.io/diploma-thesis/original/054_actors.html
-http://www.dalnefre.com/wp/2010/05/deconstructing-the-actor-model/
-https://www.brianstorti.com/the-actor-model/
+* [Actor Model for IoT](http://akshantalpm.github.io/Actor-Model-For-IoT/)
+* Actor Model vs. Object Oriented Programming: [SO](https://stackoverflow.com/questions/41215734/actor-model-vs-object-oriented-model), [Hacker News](https://news.ycombinator.com/item?id=22316693)
 
 ## Appendix: Demo Accounts and Useful Commands
 
