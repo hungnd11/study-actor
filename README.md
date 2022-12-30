@@ -34,7 +34,7 @@
       * A and B might be a web browser and a web server – A opens a connection to B, asks for a web page, and B sends the web page data back to A.
       * A and B might be an instant messaging client and server.
       * A and B might be two programs running on the same computer whose input and output have been connected by a pipe, like `ls | grep` typed into a command prompt.
-    
+
     ![Message Passing Model](./assets/img/message-passing.png "Message Passing Model")
     *Figure 2: An illustration of message passing model*
 
@@ -57,15 +57,16 @@
 
 * The actor model of computation defines a semantic model. Implementations of actor model must support:
   * Fundamental data types: address, behavior, message
-    * Address: Actors are identified by their addres. An actor's address represents the capability to send messages to actor.
+    * Address: Actors are identified by their addresses. An actor's address represents the capability to send messages to actor.
     * Behavior: The behavior of an actor describes the actions it will take when it receives a message.
     * Message: A message is an immutable value used to pass data between actors. Messages may include actor addresses, may even be empty.
   * Fundamental operations
     * Create a new actor
     * Send a message from an actor to existing actors
-    * Change an actor's behavior.
+    * Change an actor's behavior
+  
   ![An example network of several actors](./assets/img/actor-example.png "An example network of several actors")
-  *Figure 1: An example network of several actors. Each actor has its own mailbox and isolated state. Based on its designated behavior, the actor responds to incoming messages by send new messages, spawn new actors and/or changing its future behavior.*
+  *Figure 3: An example network of several actors. Each actor has its own mailbox and isolated state. Based on its designated behavior, the actor responds to incoming messages by send new messages, spawn new actors and/or changing its future behavior.*
 
 ## Case Study: ThingsBoard Actor System
 
@@ -96,7 +97,7 @@
   * `TbActorRef`: a `TbActorRef` is a reference to an actor, its foremost purpose is to provide a way to send messages to the actor it represents.
   * `TbActorCreator`: an abstract factory for creating actors, which includes methods for creating `TbActorId` and `TbActor`
   * `TbActorSystem`: a `TbActorSystem` is the entrypoint for creating, looking up, interacting with actors.
-  * `TbActorCtx`: a `TbActorCtx` provides context in which an actor reacts. The TbActorCtx` helps an actor communicate with other actors in the system (i.e. an actor can send a finite number of messages to other actors it knows; and create a number of child actors). In addition, an `TbActorCtx` provides access to the actor's own identity, the `TbActorSystem` it is part of, methods for working with the list of child actors it created.
+  * `TbActorCtx`: a `TbActorCtx` provides context in which an actor reacts. The `TbActorCtx` helps an actor communicate with other actors in the system (i.e. an actor can send a finite number of messages to other actors it knows; and create a number of child actors). In addition, an `TbActorCtx` provides access to the actor's own identity, the `TbActorSystem` it is part of, methods for working with the list of child actors it created.
   * `Dispatcher`s bind a set of actors to a thread pool. The thread pool is where commands will be executed. Dispatchers are part of `TbActorSystem`.
   * `TbActorMailbox`: a `TbActorMailbox` provides a reference to the actor, a message queues to store messages the actor received, and context for interaction with other actors.
   * `InitFailureStrategy` and `ProcessFailureStrategy`: strategies for an actor to recover from errors.
@@ -136,7 +137,7 @@
     * `stop`: stop the actor
     * `retryImmediately`: execute a retry immediately
   * `ProcessFailureStrategy` (`TbActor#onProcessFailure`): what to do if the actor failed to process a message. There are two strategies:
-    * `resume()`: resume the actor, keeping its interal state;
+    * `resume()`: resume the actor, keeping its internal state;
     * `stop()`: stop the actor permanently.
 
 * **Actor runtime: `Dispatcher`**
@@ -167,7 +168,7 @@
   * **Stats Actor** - process stats messages. An instance of this actor is always present in memory.
   
   ![The Actor Hierarchy](./assets/img/tb-actor-system-hierarchies.png "The actor hierarchy")
-  *Figure 2: The actor hierarchy in TB Actor System*
+  *Figure 4: The actor hierarchy in TB Actor System*
 
 * **Usage in ThingsBoard core**: (tenants and devices)
   * Tenants are created by `AppActor`.
@@ -221,7 +222,7 @@
   * A large number of managed devices, each of which consists of changing internal state.
   * Device managers and hierarchical groups of IoT devices.
   * The system must support millions of these device actors.
-  * The system must run on a cluster of nodes (for distributed workload) and should scale elastically (both horizontally across many nodes and vertically on a single node) if more devies come online.
+  * The system must run on a cluster of nodes (for distributed workload) and should scale elastically (both horizontally across many nodes and vertically on a single node) if more devices come online.
 
 ## References
 
